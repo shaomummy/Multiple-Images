@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <title>nike swoosh</title>
+
+    <link rel="apple-touch-icon-precomposed" href="./favicon.ico" />
+    <link rel="apple-touch-icon" href="./favicon.ico" />
+    <link rel="image_src" href="" />
+    <link rel="shortcut icon" href="./favicon.ico" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="nike swoosh" />
+
+    <meta property="og:title" content="nike swoosh" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="nike swoosh" />
+    <meta property="og:url" content="" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="628" />
+    <meta property="og:image" content="" />
+    <meta property="og:description" content="" />
+    <style>
+      .wrapper {
+        border: 1px solid #404040;
+        display: inline-block;
+
+        background-color: #eee;
+      }
+      .wrapper div {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        position: relative;
+
+        /* font-size: 24px; */
+      }
+      .wrapper div:first-of-type {
+        height: 640px;
+        position: relative;
+      }
+      h1 {
+        width: 100%;
+        text-align: center;
+      }
+      button {
+        padding: 0;
+        width: 20%;
+        border-radius: 50px;
+        height: 50px;
+        margin: 10px;
+      }
+      button.active {
+        color: #fff;
+        background-color: #000;
+      }
+      canvas {
+        left: 50%;
+        transform: translate(-50%, 25%);
+        position: absolute;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div>
+        <canvas id="c1" width="640" height="640"></canvas>
+      </div>
+      <div>
+        <h1>換色</h1>
+        <button id="changeColor" onclick="InitCanvas()">換色</button>
+      </div>
+      <div>
+        <h1>效果</h1>
+        <button onclick="ChangeMultiple(true,'source-over',this)">
+          Source Over
+        </button>
+        <button onclick="ChangeMultiple(true,'destination-over',this)">
+          Destination Over
+        </button>
+        <button onclick="ChangeMultiple(true,'source-out',this)">
+          Source out
+        </button>
+        <button onclick="ChangeMultiple(true,'destination-atop',this)">
+          Destination atop
+        </button>
+        <button onclick="ChangeMultiple(true,'lighter',this)">Lsighter</button>
+        <button class="active" onclick="ChangeMultiple(true,'darker',this)">
+          Darker
+        </button>
+
+        <button onclick="ChangeMultiple(true,'xor',this)">XOR</button>
+        <button onclick="ChangeMultiple(true,'copy',this)">Copy</button>
+      </div>
+    </div>
+    <input type="hidden" name="color" value="" />
+
+    <script src="./js/fabric.min.js"></script>
+
+    <script>
+      var canvas = new fabric.Canvas(`c1`)
+
+      ;(() => {
+        InitCanvas()
+      })()
+      function InitCanvas(c = false, m = `darker`, btn) {
+        canvas.clear()
+        blendImgSetting(`1-b.png`, false, c, m)
+        blendImgSetting(`1-t1.png`, true, c, m)
+      }
+      function ChangeMultiple(c = false, m, btn) {
+        canvas.clear()
+        document.querySelectorAll(`button`).forEach(element => {
+          if (element.classList.contains(`active`)) {
+            element.classList.remove(`active`)
+          }
+        })
+        btn.classList.add(`active`)
+        blendImgSetting(`1-b.png`, false, c, m)
+        blendImgSetting(`1-t1.png`, true, c, m)
+      }
+      function blendImgSetting(
+        img,
+        opacity = false,
+        color = false,
+        multiple = `darker`
+      ) {
+        var op = opacity === true ? 0.75 : 1
+        if (!color) {
+          var colors =
+            `rgb(` +
+            RandomColor() +
+            `,` +
+            RandomColor() +
+            `,` +
+            RandomColor() +
+            `)`
+          if (document.getElementsByName(`color`).value !== undefined) {
+            colortemp = document.getElementsByName(`color`).value.split(`|`)
+
+            opacity === true
+              ? (document.getElementsByName(`color`).value =
+                  colortemp[0] + `|` + colors)
+              : (document.getElementsByName(`color`).value =
+                  colors + `|` + colortemp[1])
+          } else {
+            document.getElementsByName(`color`).value = colors + `|`
+          }
+        } else {
+          colors =
+            opacity === true
+              ? document.getElementsByName(`color`).value.split(`|`)[1]
+              : document.getElementsByName(`color`).value.split(`|`)[0]
+        }
+        blendImg(img, colors, multiple, op)
+      }
+      function blendImg(img, colors, multiple, op) {
+        var blendImg_botton = fabric.Image.fromURL(
+          `./images/` + img,
+          function(oImg) {
+            var filter = new fabric.Image.filters.Blend({
+              color: colors,
+              alpha: 1
+            })
+
+            oImg.set(`globalCompositeOperation`, multiple)
+            oImg.filters.push(filter)
+            oImg.applyFilters(canvas.renderAll.bind(canvas))
+            canvas.add(oImg)
+          },
+          {
+            width: 640,
+            height: 640,
+            opacity: op,
+            evented: false,
+            selectable: false,
+            crossOrigin: `Anonymous`
+          }
+        )
+      }
+      function RandomColor() {
+        return Math.floor(Math.random() * 255) + 1
+      }
+    </script>
+  </body>
+</html>
